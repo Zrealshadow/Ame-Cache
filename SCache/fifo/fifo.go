@@ -56,7 +56,7 @@ func (c *fifo) Set(key string, value interface{}) {
 	c.cache[key] = e
 
 	c.usedBytes += en.Len()
-	if c.usedBytes > c.maxBytes {
+	if c.usedBytes > c.maxBytes && c.maxBytes > 0 {
 		c.DelOldest()
 		// Pop another record
 	}
@@ -77,6 +77,9 @@ func (c *fifo) Del(key string) {
 }
 
 func (c *fifo) DelOldest() {
+	if c.ll.Len() == 0 {
+		return
+	}
 	c.remove(c.ll.Front())
 }
 
