@@ -43,6 +43,8 @@ func CalcLen(value interface{}) int {
 		n = 8
 	case complex128:
 		n = 16
+	case []uint8:
+		n = len(v)
 	default:
 		panic(fmt.Sprintf("%T is not implement cache.Value", value))
 	}
