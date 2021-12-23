@@ -18,10 +18,7 @@ func NewFastCache(maxEntriesSize int, shardsNum int, onEvicted func(key string, 
 	}
 
 	for i := 0; i < shardsNum; i++ {
-		fc.shards[i] = &cacheShard{
-			maxEntrySize: maxEntriesSize,
-			onEvicted:    onEvicted,
-		}
+		fc.shards[i] = newCacheShard(maxEntriesSize, onEvicted)
 	}
 
 	return fc

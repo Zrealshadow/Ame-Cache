@@ -16,7 +16,7 @@ type cacheShard struct {
 	cache         map[string]*list.Element
 }
 
-func newCacheSahrd(maxEntriesSize int, onEvicted func(key string, value interface{})) *cacheShard {
+func newCacheShard(maxEntriesSize int, onEvicted func(key string, value interface{})) *cacheShard {
 	return &cacheShard{
 		maxEntrySize: maxEntriesSize,
 		onEvicted:    onEvicted,
@@ -42,19 +42,21 @@ func (c *cacheShard) set(key string, value interface{}) {
 	defer c.mu.Unlock()
 
 	if e, ok := c.cache[key]; ok {
-		e.Value.(*entry).value = value
+		en := e.Value.(*entry)
+		c.usedEntrySize = c.usedEntrySize + lc.CalcLen(value) - en.Len()
+		en.value = value
 		c.ll.MoveToBack(e)
+		return
 	}
 
 	en := &entry{key: key, value: value}
-
+	e := c.ll.PushBack(en)
 	for c.usedEntrySize+en.Len() > c.maxEntrySize && c.maxEntrySize > 0 {
 		c.delOldest()
 	}
-
-	e := c.ll.PushBack(en)
+	c.usedEntrySize += en.Len()
 	c.cache[key] = e
-
+	return
 }
 
 func (c *cacheShard) del(key string) {
@@ -96,5 +98,5 @@ type entry struct {
 }
 
 func (e *entry) Len() int {
-	return lc.CalcLen(e)
+	return lc.CalcLen(e.value)
 }
