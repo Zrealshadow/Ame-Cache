@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/allegro/bigcache/v2"
+	fcache "github.com/lingze/localCache/FCache"
 	scache "github.com/lingze/localCache/SCache"
 	"github.com/lingze/localCache/SCache/lru"
 )
 
-const maxEntrySize = 246
+const maxEntrySize = 256
 
 // -------- Helper Tool --------- //
 
@@ -42,8 +43,11 @@ func initBigCache(entriesInWindow int) *bigcache.BigCache {
 		MaxEntrySize:       maxEntrySize,
 		Verbose:            true,
 	})
-
 	return cache
+}
+
+func initFastCache(maxEntriesSize int) *fcache.FastCache {
+	return fcache.NewFastCache(maxEntrySize, 256, nil)
 }
 
 // --------------------   Set Performance Test ------------------//
@@ -56,6 +60,13 @@ func BenchmarkMapSet(b *testing.B) {
 
 func BenchmarkSimpleCacheSet(b *testing.B) {
 	cache := scache.NewSCache(nil, lru.New(b.N*100, nil))
+	for i := 0; i < b.N; i++ {
+		cache.Set(key(i), value())
+	}
+}
+
+func BenchmarkFastCacheSet(b *testing.B) {
+	cache := initFastCache(b.N * 100)
 	for i := 0; i < b.N; i++ {
 		cache.Set(key(i), value())
 	}
@@ -106,6 +117,18 @@ func BenchmarkSimpleCacheGet(b *testing.B) {
 	}
 }
 
+func BenchmarkFastCacheGet(b *testing.B) {
+	b.StopTimer()
+	cache := initFastCache(b.N * 100)
+	for i := 0; i < b.N; i++ {
+		cache.Set(key(i), value())
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		cache.Get(key(i))
+	}
+}
+
 func BenchmarkConcurrentMapGet(b *testing.B) {
 	b.StopTimer()
 	var m sync.Map
@@ -140,6 +163,20 @@ func BenchmarkBigCacheGet(b *testing.B) {
 
 func BenchmarkSimpleCacheSetParallel(b *testing.B) {
 	cache := scache.NewSCache(nil, lru.New(b.N*100, nil))
+	rand.Seed(time.Now().Unix())
+
+	b.RunParallel(func(pb *testing.PB) {
+		id := rand.Intn(1000)
+		counter := 0
+		for pb.Next() {
+			cache.Set(parallelKey(id, counter), value())
+			counter = counter + 1
+		}
+	})
+}
+
+func BenchmarkFastCacheSetParallel(b *testing.B) {
+	cache := initFastCache(b.N * 100)
 	rand.Seed(time.Now().Unix())
 
 	b.RunParallel(func(pb *testing.PB) {
@@ -198,6 +235,24 @@ func BenchmarkSimpleCacheGetParallel(b *testing.B) {
 	})
 }
 
+func BenchmarkFastCacheGetParallel(b *testing.B) {
+	b.StopTimer()
+	cache := initFastCache(b.N * 100)
+
+	for i := 0; i < b.N; i++ {
+		cache.Set(key(i), value())
+	}
+
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		counter := 0
+		for pb.Next() {
+			cache.Get(key(counter))
+			counter = counter + 1
+		}
+	})
+}
+
 func BenchmarkConcurrentMapGetParallel(b *testing.B) {
 	b.StopTimer()
 	var cache sync.Map
@@ -236,6 +291,30 @@ func BenchmarkBigCacheGetParallel(b *testing.B) {
 // --------------- Parallel Set Get Performance Test ----------- //
 func BenchmarkSimpleCacheSetGetParallel(b *testing.B) {
 	cache := scache.NewSCache(nil, lru.New(b.N*100, nil))
+	tids := make([]int, 0, 10)
+	rand.Seed(time.Now().Unix())
+	b.RunParallel(func(pb *testing.PB) {
+		tid := rand.Intn(1000)
+		tids = append(tids, tid)
+		counter := 0
+		for pb.Next() {
+			cache.Set(parallelKey(tid, counter), value())
+			counter = counter + 1
+		}
+	})
+
+	b.RunParallel(func(pb *testing.PB) {
+		counter := 0
+		tid := tids[rand.Intn(len(tids))]
+		for pb.Next() {
+			cache.Get(parallelKey(tid, counter))
+			counter = counter + 1
+		}
+	})
+}
+
+func BenchmarkFastCacheSetGetParallel(b *testing.B) {
+	cache := initFastCache(b.N * 100)
 	tids := make([]int, 0, 10)
 	rand.Seed(time.Now().Unix())
 	b.RunParallel(func(pb *testing.PB) {
