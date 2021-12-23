@@ -3,7 +3,7 @@ package fifo
 import (
 	"container/list"
 
-	scache "github.com/lingze/localCache/SCache"
+	lc "github.com/lingze/localCache"
 )
 
 type fifo struct {
@@ -19,7 +19,7 @@ type fifo struct {
 	cache map[string]*list.Element
 }
 
-func New(maxbytes int, onevicted func(key string, value interface{})) scache.Cache {
+func New(maxbytes int, onevicted func(key string, value interface{})) lc.Cache {
 	c := &fifo{
 		maxBytes:  maxbytes,
 		onEvicted: onevicted,
@@ -36,7 +36,7 @@ type entry struct {
 }
 
 func (e *entry) Len() int {
-	return scache.CalcLen(e.value)
+	return lc.CalcLen(e.value)
 }
 
 func (c *fifo) Set(key string, value interface{}) {
@@ -45,7 +45,7 @@ func (c *fifo) Set(key string, value interface{}) {
 		en := e.Value.(*entry)
 
 		//update size
-		c.usedBytes = c.usedBytes - scache.CalcLen(en.value) + scache.CalcLen(value)
+		c.usedBytes = c.usedBytes - lc.CalcLen(en.value) + lc.CalcLen(value)
 		en.value = value
 		return
 	}

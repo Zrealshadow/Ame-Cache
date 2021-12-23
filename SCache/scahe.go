@@ -2,17 +2,19 @@ package scache
 
 import (
 	"sync"
+
+	lc "github.com/lingze/localCache"
 )
 
 const DefaultMaxBytes = 1 << 29
 
 type SimpleCache struct {
 	m          sync.RWMutex
-	cache      Cache
+	cache      lc.Cache
 	nhit, nget int
 }
 
-func NewSimpleCache(cache Cache) *SimpleCache {
+func NewSimpleCache(cache lc.Cache) *SimpleCache {
 	return &SimpleCache{
 		cache: cache,
 	}
@@ -72,7 +74,7 @@ type SCache struct {
 	getter    Getter
 }
 
-func NewSCache(getter Getter, cache Cache) *SCache {
+func NewSCache(getter Getter, cache lc.Cache) *SCache {
 	return &SCache{
 		mainCache: &SimpleCache{cache: cache},
 		getter:    getter,

@@ -42,3 +42,28 @@ func TestOnEvicted(t *testing.T) {
 	is.Equal(expected, keys)
 	is.Equal(2, cache.Len())
 }
+
+// func value() []byte {
+// 	return V(make([]byte, 100))
+// }
+
+// type V []byte
+
+// func (v *V) Len() int {
+// 	return len(*v)
+// }
+
+// func TestSetGetBytes(t *testing.T) {
+// 	// is := is.New(t)
+
+// 	cache := New(24, nil)
+// 	cache.DelOldest()
+// 	cache.Set("k1", value())
+// 	// v := cache.Get("k1")
+// 	// is.Equal(v, 1)
+
+// 	// cache.Del("k1")
+// 	// is.Equal(0, cache.Len()) // expect to be the same
+
+// 	// cache.Set("k2", time.Now())
+// }

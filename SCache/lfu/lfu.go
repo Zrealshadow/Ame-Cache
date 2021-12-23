@@ -3,7 +3,7 @@ package lfu
 import (
 	"container/heap"
 
-	scache "github.com/lingze/localCache/SCache"
+	lc "github.com/lingze/localCache"
 )
 
 type lfu struct {
@@ -26,10 +26,10 @@ type entry struct {
 }
 
 func (e *entry) Len() int {
-	return scache.CalcLen(e.value)
+	return lc.CalcLen(e.value)
 }
 
-func New(maxBytes int, onEvicted func(key string, value interface{})) scache.Cache {
+func New(maxBytes int, onEvicted func(key string, value interface{})) lc.Cache {
 	q := make(pQueue, 0, 1024)
 	c := &lfu{
 		maxBytes:  maxBytes,
@@ -44,7 +44,7 @@ func New(maxBytes int, onEvicted func(key string, value interface{})) scache.Cac
 func (c *lfu) Set(key string, value interface{}) {
 	if e, ok := c.cache[key]; ok {
 		// exist
-		c.usedBytes = c.usedBytes - e.Len() + scache.CalcLen(value)
+		c.usedBytes = c.usedBytes - e.Len() + lc.CalcLen(value)
 		c.pqueue.update(e, value, e.weight+1)
 		return
 	}
