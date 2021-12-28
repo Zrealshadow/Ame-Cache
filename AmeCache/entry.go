@@ -45,6 +45,7 @@ func EncodeEntry(t uint64, key string, value []byte, buffer *[]byte) []byte {
 	binary.BigEndian.PutUint16(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize:], uint16(keysize))
 	copy(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize+KeySizeInBytes:], []byte(key))
 	copy(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize+KeySizeInBytes+keysize:], value)
+
 	// DEBUG
 	// fmt.Printf("Entry Header : %v\n", bu[:EntryHeaderSize])
 	// fmt.Printf("Entry Empty Flag : %v\n", bu[EntryHeaderSize])
