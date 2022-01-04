@@ -3,7 +3,7 @@ package amecache
 const (
 	DefaultMaxByteSize        int = 1024 * 4 * 1024 // 4MB
 	DefaultInitializeByteSize int = 1024 * 64       // 64KB
-	LeftMargin                    = 1
+	LeftMargin                    = 0
 )
 
 type byteQueue struct {
@@ -11,9 +11,29 @@ type byteQueue struct {
 	rightMargin int
 	queue       []byte
 	capacity    int
+	maxCapacity int
 	usedByte    int
 	count       int
-	full        bool
+}
+
+func newByteQueue(init_size int, max_size int) *byteQueue {
+	if init_size == 0 {
+		init_size = DefaultInitializeByteSize
+	}
+
+	if max_size == 0 {
+		max_size = DefaultMaxByteSize
+	}
+	bq := &byteQueue{
+		head:        LeftMargin,
+		tail:        LeftMargin,
+		rightMargin: LeftMargin,
+		queue:       make([]byte, init_size),
+		capacity:    init_size,
+		maxCapacity: max_size,
+		usedByte:    0,
+	}
+	return bq
 }
 
 func (bq *byteQueue) Get(offset uint32) ([]byte, error) {
@@ -32,10 +52,6 @@ func (bq *byteQueue) Reset(offset uint32) error {
 	return nil
 }
 
-func (bq *byteQueue) Pop() ([]byte, error) {
-	return nil, nil
-}
-
 func (bq *byteQueue) Push(entry []byte) (int, error) {
 	entrySize := len(entry)
 
@@ -52,13 +68,40 @@ func (bq *byteQueue) Push(entry []byte) (int, error) {
 	}
 
 	bq.count++
-
+	bq.usedByte += len(entry)
 	return index, nil
 
 }
 
-func (bq *byteQueue) push(entry []byte) {
+// get the oldest entry
+func (bq *byteQueue) Peek() ([]byte, error) {
+	entry, err := bq.Get(uint32(bq.head))
+	if err != nil {
+		return nil, err
+	}
+	return entry, nil
+}
 
+// remove the oldest entry
+func (bq *byteQueue) Pop() error {
+	entry, err := bq.Get(uint32(bq.head))
+	if err != nil {
+		return err
+	}
+	bq.usedByte -= len(entry)
+	bq.count--
+	bq.head += int(readEntryheader(entry))
+
+	// should consider the special situation
+	if bq.head == bq.rightMargin {
+		bq.head = LeftMargin
+		if bq.tail == bq.rightMargin {
+			bq.tail = LeftMargin
+		}
+		bq.rightMargin = bq.tail
+	}
+
+	return nil
 }
 
 func (bq *byteQueue) locateNewEntry(need int) error {
@@ -79,8 +122,9 @@ func (bq *byteQueue) locateNewEntry(need int) error {
 
 	} else {
 		// tail 在 head 之前
-		if bq.tail+need < bq.head {
-			//从正常bq.tail 插入 , 这里不能相等!
+		if bq.tail+need+EntryMinLen < bq.head {
+			// 这里要留一个EntryMinLen的大小来填补空白
+			// 从正常bq.tail 插入 , 这里不能相等!
 			return nil
 		} else {
 			// 寻求扩容, 扩容后会回到正序，且 head = LeftMargin = 1
@@ -90,14 +134,18 @@ func (bq *byteQueue) locateNewEntry(need int) error {
 }
 
 func (bq *byteQueue) allocateExtraMemory(need int) error {
-	bq.capacity += need
-	if bq.capacity > DefaultMaxByteSize {
+	oldCapacity := bq.capacity
+	if bq.capacity+need > bq.maxCapacity {
 		return ErrOutOfMemory
 	}
 	// double increase
 	bq.capacity *= 2
-	if bq.capacity > DefaultMaxByteSize {
-		bq.capacity = DefaultMaxByteSize
+	for bq.capacity < oldCapacity+need {
+		bq.capacity *= 2
+	}
+
+	if bq.capacity > bq.maxCapacity {
+		bq.capacity = bq.maxCapacity
 	}
 
 	oldqueue := bq.queue
@@ -111,10 +159,13 @@ func (bq *byteQueue) allocateExtraMemory(need int) error {
 		copy(bq.queue, oldqueue[:bq.rightMargin])
 	} else {
 		// tail < head
-		copy(bq.queue, oldqueue[bq.head:bq.rightMargin])
-		copy(bq.queue[bq.rightMargin-bq.head:], oldqueue[:bq.tail])
+		copy(bq.queue, oldqueue[:bq.rightMargin])
+		// fix with an Empty Entry
+		valueLen := bq.head - bq.tail - EntryMinLen
+		entry := GenerateEmptyEntry(valueLen)
+		copy(bq.queue[bq.tail:], entry)
 		bq.head = LeftMargin
-		bq.tail = bq.usedByte + 1
+		bq.tail = bq.rightMargin
 	}
 	return nil
 }
