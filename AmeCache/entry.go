@@ -26,6 +26,7 @@ const (
 	EmptyFlagSize   = 1
 	TimestampSize   = 8
 	KeySizeInBytes  = 2 // int16 key length
+	EntryMinLen     = EntryHeaderSize + EmptyFlagSize
 )
 
 func EncodeEntry(t uint64, key string, value []byte, buffer *[]byte) []byte {
@@ -88,4 +89,12 @@ func readValueFromEntry(entry []byte) []byte {
 
 func resetEntry(entry []byte) {
 	entry[EntryHeaderSize] = 0
+}
+
+func GenerateEmptyEntry(valueSize int) []byte {
+	l := EntryMinLen + valueSize
+	bu := make([]byte, l)
+	binary.BigEndian.PutUint32(bu, uint32(l))
+	bu[EntryHeaderSize] = uint8(0)
+	return bu
 }
