@@ -21,7 +21,7 @@ func TestByteQueueBasicAPIWithoutAllocation(t *testing.T) {
 		key := strconv.Itoa(int(i))
 		value := make([]byte, 50)
 		copy(value, []byte(key))
-		entry := EncodeEntry(uint64(time.Now().Unix()), key, value, &buffer)
+		entry := EncodeEntry(uint64(time.Now().Unix()), uint64(0), key, value, &buffer)
 		pos, err := bq.Push(entry)
 		if err != nil {
 			panic(fmt.Sprintf("push err : %s", err.Error()))
@@ -94,6 +94,7 @@ func TestByteQueueBasicAllocation(t *testing.T) {
 	for i := 0; i < N; i++ {
 		key := strconv.Itoa(i)
 		entry, value := GenerateFixSizeEntry(100, key)
+		// fmt.Printf("Entry Size %d", len(entry))
 		kv[key] = value
 		pos, err := bq.Push(entry)
 
@@ -271,14 +272,15 @@ func TestByteQueueCheckEmptyEntry(t *testing.T) {
 }
 
 func GenerateFixSizeEntry(l int, key string) ([]byte, string) {
-	// EntryLen := 4 + 1 + 8 + 2 + keysize + valueSize
+	// EntryLen := 4 + 1 + 8 + 2  + 4 + keysize + valueSize
+	FixLen := EntryHeaderSize + EmptyFlagSize + TimestampSize + HashKeySize + KeySizeInBytes
 	keysize := len([]byte(key))
-	if l < 15+keysize {
+	if l < FixLen+keysize {
 		return make([]byte, 0), ""
 	}
-	value := make([]byte, l-15-keysize)
+	value := make([]byte, l-FixLen-keysize)
 	copy(value, []byte(key))
-	entry := EncodeEntry(uint64(time.Now().Unix()), key, value, &buffer)
+	entry := EncodeEntry(uint64(time.Now().Unix()), uint64(0), key, value, &buffer)
 	return entry, string(value)
 }
 

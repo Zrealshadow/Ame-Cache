@@ -18,7 +18,7 @@ func TestEntryAPI(t *testing.T) {
 	entries := make([][]byte, N)
 	for i := 0; i < N; i++ {
 		units[i] = &Unit{t: uint64(i), key: strconv.Itoa(i), value: []byte(strconv.Itoa(i))}
-		buSlice := EncodeEntry(units[i].t, units[i].key, units[i].value, &buffer)
+		buSlice := EncodeEntry(units[i].t, units[i].t, units[i].key, units[i].value, &buffer)
 		entries[i] = make([]byte, len(buSlice))
 		copy(entries[i], buSlice)
 		entrySizeLists[i] = uint32(len(buSlice))
@@ -35,7 +35,7 @@ func TestEntryAPI(t *testing.T) {
 	// Random Data
 	for i := 0; i < N; i++ {
 		units[i] = RandomGenerate()
-		buSlice := EncodeEntry(units[i].t, units[i].key, units[i].value, &buffer)
+		buSlice := EncodeEntry(units[i].t, units[i].t, units[i].key, units[i].value, &buffer)
 		entries[i] = make([]byte, len(buSlice))
 		copy(entries[i], buSlice)
 		resetEntry(entries[i])
@@ -46,7 +46,8 @@ func TestEntryAPI(t *testing.T) {
 	for i := 0; i < N; i++ {
 		is.Equal(entrySizeLists[i], readEntryheader(entries[i]))
 		is.Equal(false, checkEntryValid(entries[i]))
-		is.Equal(units[i].t, readTimestampFromEntry(entries[i]))                 // Timestamp
+		is.Equal(units[i].t, readTimestampFromEntry(entries[i])) // Timestamp
+		is.Equal(units[i].t, readHashKeyFromEntry(entries[i]))
 		is.Equal(units[i].key, readKeyFromEntry(entries[i]))                     // Key
 		is.Equal(string(units[i].value), string(readValueFromEntry(entries[i]))) // Value
 	}

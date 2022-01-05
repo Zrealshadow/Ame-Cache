@@ -18,34 +18,41 @@ import (
 // Entry Structure
 
 /*
-	| EntryHeader | EmptyFlagSize | Timestamp |KeySize | Key | Value |
+	| EntryHeader | EmptyFlagSize | Timestamp | HashKey |KeySize | Key | Value |
 */
 
 const (
 	EntryHeaderSize = 4 // int32 include all Entry Length
 	EmptyFlagSize   = 1
 	TimestampSize   = 8
+	HashKeySize     = 8 //64/8 = 8
 	KeySizeInBytes  = 2 // int16 key length
 	EntryMinLen     = EntryHeaderSize + EmptyFlagSize
 )
 
-func EncodeEntry(t uint64, key string, value []byte, buffer *[]byte) []byte {
+func EncodeEntry(t uint64, khash uint64, key string, value []byte, buffer *[]byte) []byte {
 	//Cal Entry Header Size
 	keysize := len([]byte(key))
-	entrySize := EntryHeaderSize + TimestampSize + KeySizeInBytes + uint32(keysize) + uint32(len(value)) + EmptyFlagSize
+	entrySize := EntryHeaderSize + TimestampSize + HashKeySize + KeySizeInBytes + uint32(keysize) + uint32(len(value)) + EmptyFlagSize
 
 	if entrySize > uint32(len(*buffer)) {
 		*buffer = make([]byte, entrySize)
 	}
 	bu := *buffer
 	// Input Data
+	L := EntryHeaderSize
 	binary.BigEndian.PutUint32(bu, uint32(entrySize))
-
 	bu[EntryHeaderSize] = uint8(1)
-	binary.BigEndian.PutUint64(bu[EntryHeaderSize+EmptyFlagSize:], t)
-	binary.BigEndian.PutUint16(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize:], uint16(keysize))
-	copy(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize+KeySizeInBytes:], []byte(key))
-	copy(bu[EntryHeaderSize+EmptyFlagSize+TimestampSize+KeySizeInBytes+keysize:], value)
+	L += 1
+	binary.BigEndian.PutUint64(bu[L:], t)
+	L += TimestampSize
+	binary.BigEndian.PutUint64(bu[L:], khash)
+	L += HashKeySize
+	binary.BigEndian.PutUint16(bu[L:], uint16(keysize))
+	L += KeySizeInBytes
+	copy(bu[L:], []byte(key))
+	L += keysize
+	copy(bu[L:], value)
 
 	// DEBUG
 	// fmt.Printf("Entry Header : %v\n", bu[:EntryHeaderSize])
@@ -69,9 +76,13 @@ func readTimestampFromEntry(entry []byte) uint64 {
 	return binary.BigEndian.Uint64(entry[EntryHeaderSize+EmptyFlagSize:])
 }
 
+func readHashKeyFromEntry(entry []byte) uint64 {
+	return binary.BigEndian.Uint64(entry[EntryHeaderSize+EmptyFlagSize+TimestampSize:])
+}
+
 func readKeyFromEntry(entry []byte) string {
-	keysize := binary.BigEndian.Uint16(entry[EntryHeaderSize+EmptyFlagSize+TimestampSize:])
-	idx := EntryHeaderSize + EmptyFlagSize + TimestampSize + KeySizeInBytes
+	keysize := binary.BigEndian.Uint16(entry[EntryHeaderSize+EmptyFlagSize+TimestampSize+HashKeySize:])
+	idx := EntryHeaderSize + EmptyFlagSize + TimestampSize + KeySizeInBytes + HashKeySize
 	return string(entry[idx : idx+int(keysize)])
 }
 
@@ -80,8 +91,8 @@ func readKeyFromEntry(entry []byte) string {
 // }
 func readValueFromEntry(entry []byte) []byte {
 	l := readEntryheader(entry)
-	keysize := binary.BigEndian.Uint16(entry[EntryHeaderSize+EmptyFlagSize+TimestampSize:])
-	idx := EntryHeaderSize + EmptyFlagSize + TimestampSize + KeySizeInBytes + keysize
+	keysize := binary.BigEndian.Uint16(entry[EntryHeaderSize+EmptyFlagSize+TimestampSize+HashKeySize:])
+	idx := EntryHeaderSize + EmptyFlagSize + TimestampSize + KeySizeInBytes + keysize + HashKeySize
 	return entry[idx:l]
 }
 
