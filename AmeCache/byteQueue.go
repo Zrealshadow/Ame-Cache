@@ -79,6 +79,14 @@ func (bq *byteQueue) Peek() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// for !checkEntryValid(entry) {
+	// 	// Skip Empty Entry
+	// 	bq.Pop()
+	// 	entry, err = bq.Get(uint32(bq.head))
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 	return entry, nil
 }
 
@@ -88,8 +96,12 @@ func (bq *byteQueue) Pop() error {
 	if err != nil {
 		return err
 	}
-	bq.usedByte -= len(entry)
-	bq.count--
+
+	if checkEntryValid(entry) {
+		bq.usedByte -= len(entry)
+		bq.count--
+	}
+
 	bq.head += int(readEntryheader(entry))
 
 	// should consider the special situation
