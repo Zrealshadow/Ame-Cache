@@ -211,7 +211,7 @@ func TestByteQueueBasicAPITailBeforeHead(t *testing.T) {
 		m[key] = uint32(pos)
 	}
 
-	CheckAllKV(kv, m, bq, t)
+	CheckByteQueueAllKV(kv, m, bq, t)
 }
 
 func TestByteQueueCheckEmptyEntry(t *testing.T) {
@@ -266,9 +266,8 @@ func TestByteQueueCheckEmptyEntry(t *testing.T) {
 		kv[key] = value
 		m[key] = uint32(pos)
 	}
-
 	key_order := []int{4, -1, 2, 3, 5}
-	CheckOrder(key_order, bq, t)
+	CheckByteQueueOrder(key_order, bq, t)
 }
 
 func GenerateFixSizeEntry(l int, key string) ([]byte, string) {
@@ -284,7 +283,7 @@ func GenerateFixSizeEntry(l int, key string) ([]byte, string) {
 	return entry, string(value)
 }
 
-func CheckAllKV(kv map[string]string, m map[string]uint32, bq *byteQueue, t *testing.T) {
+func CheckByteQueueAllKV(kv map[string]string, m map[string]uint32, bq *byteQueue, t *testing.T) {
 	for key, value := range kv {
 		pos := m[key]
 		entry, err := bq.Get(pos)
@@ -302,7 +301,7 @@ func CheckAllKV(kv map[string]string, m map[string]uint32, bq *byteQueue, t *tes
 }
 
 // It will pop element
-func CheckOrder(order []int, bq *byteQueue, t *testing.T) {
+func CheckByteQueueOrder(order []int, bq *byteQueue, t *testing.T) {
 	for idx, k := range order {
 		key := strconv.Itoa(k)
 		entry, err := bq.Peek()

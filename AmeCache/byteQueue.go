@@ -41,6 +41,7 @@ func (bq *byteQueue) Get(offset uint32) ([]byte, error) {
 		return nil, ErrOutOfIndex
 	}
 	entrysize := readEntryheader(bq.queue[offset:])
+	// fmt.Printf("offset %d entrySize %d\n", offset, entrysize)
 	return bq.queue[offset : uint32(offset)+entrysize], nil
 }
 
@@ -54,7 +55,6 @@ func (bq *byteQueue) Reset(offset uint32) error {
 
 func (bq *byteQueue) Push(entry []byte) (int, error) {
 	entrySize := len(entry)
-
 	if err := bq.locateNewEntry(entrySize); err != nil {
 		return 0, err
 	}
@@ -70,7 +70,6 @@ func (bq *byteQueue) Push(entry []byte) (int, error) {
 	bq.count++
 	bq.usedByte += len(entry)
 	return index, nil
-
 }
 
 // get the oldest entry
@@ -97,20 +96,19 @@ func (bq *byteQueue) Pop() error {
 		return err
 	}
 
-	if checkEntryValid(entry) {
-		bq.usedByte -= len(entry)
-		bq.count--
-	}
-
+	bq.usedByte -= len(entry)
+	bq.count--
 	bq.head += int(readEntryheader(entry))
 
 	// should consider the special situation
 	if bq.head == bq.rightMargin {
+		// fmt.Printf("Before: Status: head %d Tail %d RighMargin %d\n", bq.head, bq.tail, bq.rightMargin)
 		bq.head = LeftMargin
 		if bq.tail == bq.rightMargin {
 			bq.tail = LeftMargin
 		}
 		bq.rightMargin = bq.tail
+		// fmt.Printf("After Status: head %d Tail %d RighMargin %d\n", bq.head, bq.tail, bq.rightMargin)
 	}
 
 	return nil
@@ -123,7 +121,7 @@ func (bq *byteQueue) locateNewEntry(need int) error {
 		if bq.tail+need <= bq.capacity {
 			// 正常从bq.tail 处插入
 			return nil
-		} else if LeftMargin+need <= bq.head {
+		} else if LeftMargin+need < bq.head {
 			// 无法从tail处插入，在head处找寻可插入的
 			bq.tail = LeftMargin
 			return nil
@@ -178,6 +176,8 @@ func (bq *byteQueue) allocateExtraMemory(need int) error {
 		copy(bq.queue[bq.tail:], entry)
 		bq.head = LeftMargin
 		bq.tail = bq.rightMargin
+		bq.count += 1
+		bq.usedByte += len(entry)
 	}
 	return nil
 }
