@@ -43,7 +43,7 @@ func EncodeEntry(t uint64, khash uint64, key string, value []byte, buffer *[]byt
 	L := EntryHeaderSize
 	binary.BigEndian.PutUint32(bu, uint32(entrySize))
 	bu[EntryHeaderSize] = uint8(1)
-	L += 1
+	L += EmptyFlagSize
 	binary.BigEndian.PutUint64(bu[L:], t)
 	L += TimestampSize
 	binary.BigEndian.PutUint64(bu[L:], khash)
