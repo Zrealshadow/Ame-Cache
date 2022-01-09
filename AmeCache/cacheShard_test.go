@@ -8,7 +8,7 @@ import (
 
 var posMap = make(map[string]uint32)
 
-func TestCacheShardBasic(t *testing.T) {
+func TestCacheShardBasicOrder(t *testing.T) {
 	evictedMap := make(map[string]string)
 	inputMap := make(map[uint64]string)
 	cs := newCacheShard(InitSize, MaxSize, func(key string, value interface{}) {
@@ -20,7 +20,19 @@ func TestCacheShardBasic(t *testing.T) {
 	// Del A Lot
 }
 
-func GenerateRandomKV(usedKey map[uint64]string) (uint64, string, string) {
+func TestCacheShardBasicRandom(t *testing.T) {
+	evictedMap := make(map[string]string)
+	inputMap := make(map[uint64]string)
+	cs := newCacheShard(InitSize, MaxSize, func(key string, value interface{}) {
+		evictedMap[key] = string(value.([]byte))
+	})
+	N := 20000
+	FillUpCache(inputMap, cs, t, N, false)
+	CheckCacheShardKV(inputMap, evictedMap, cs, t)
+	// Del A Lot
+}
+
+func GenerateRandomKVHash(usedKey map[uint64]string) (uint64, string, string) {
 	khash := rand.Int63()
 	_, ok := usedKey[uint64(khash)]
 	for ok {
@@ -38,7 +50,7 @@ func FillUpCache(inputMap map[uint64]string, cs *cacheShard, t *testing.T, N int
 	var k, v string
 	for i := 0; i < N; i++ {
 		if !ordered {
-			kh, k, v = GenerateRandomKV(inputMap)
+			kh, k, v = GenerateRandomKVHash(inputMap)
 		} else {
 			kh = uint64(i)
 			k = fmt.Sprintf("%d", kh)
