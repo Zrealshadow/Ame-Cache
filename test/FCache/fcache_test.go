@@ -19,14 +19,6 @@ func TestFastCacheGet(t *testing.T) {
 
 	is := is.New(t)
 
-	// var wg sync.WaitGroup
-	// for k, v := range db {
-	// 	wg.Add(1)
-	// 	go func(k, v string) {
-	// 		defer wg.Done()
-
-	// 	}(k, v)
-	// }
 	for k, v := range db {
 		cache.Set(k, v)
 	}

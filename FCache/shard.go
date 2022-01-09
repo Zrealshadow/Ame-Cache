@@ -62,6 +62,7 @@ func (c *cacheShard) set(key string, value interface{}) {
 func (c *cacheShard) del(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if e, ok := c.cache[key]; ok {
 		c.remove(e)
 	}
@@ -88,6 +89,7 @@ func (c *cacheShard) remove(e *list.Element) {
 		c.onEvicted(en.key, en.value)
 	}
 }
+
 func (c *cacheShard) Len() int {
 	return c.ll.Len()
 }
