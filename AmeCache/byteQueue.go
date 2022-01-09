@@ -41,7 +41,6 @@ func (bq *byteQueue) Get(offset uint32) ([]byte, error) {
 		return nil, ErrOutOfIndex
 	}
 	entrysize := readEntryheader(bq.queue[offset:])
-	// fmt.Printf("offset %d entrySize %d\n", offset, entrysize)
 	return bq.queue[offset : uint32(offset)+entrysize], nil
 }
 
@@ -102,13 +101,11 @@ func (bq *byteQueue) Pop() error {
 
 	// should consider the special situation
 	if bq.head == bq.rightMargin {
-		// fmt.Printf("Before: Status: head %d Tail %d RighMargin %d\n", bq.head, bq.tail, bq.rightMargin)
 		bq.head = LeftMargin
 		if bq.tail == bq.rightMargin {
 			bq.tail = LeftMargin
 		}
 		bq.rightMargin = bq.tail
-		// fmt.Printf("After Status: head %d Tail %d RighMargin %d\n", bq.head, bq.tail, bq.rightMargin)
 	}
 
 	return nil
