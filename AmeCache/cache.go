@@ -39,37 +39,47 @@ func NewAmeCache(options ...AmeCacheOption) *AmeCache {
 	for i := 0; i < c.shardNum; i++ {
 		c.shards[i] = newCacheShard(c.shardInitByteSize, c.shardMaxByteSize, c.onEvicted)
 	}
+
+	if c.hash == nil {
+		c.hash = fnv64a{}
+	}
 	return c
 }
 
 type AmeCacheOption func(*AmeCache)
 
-func ShardsNum(shardNum int) AmeCacheOption {
+func ShardsNumOption(shardNum int) AmeCacheOption {
 	return func(ac *AmeCache) {
 		ac.shardNum = shardNum
 		ac.shardMask = uint64(shardNum - 1)
 	}
 }
 
-func ShardMaxByteSize(maxByteSize int) AmeCacheOption {
+func ShardMaxByteSizeOption(maxByteSize int) AmeCacheOption {
 	return func(ac *AmeCache) {
 		ac.shardMaxByteSize = maxByteSize
 	}
 }
 
-func ShardInitByteSize(initByteSize int) AmeCacheOption {
+func ShardInitByteSizeOption(initByteSize int) AmeCacheOption {
 	return func(ac *AmeCache) {
 		ac.shardInitByteSize = initByteSize
 	}
 }
 
-func AddOnEvicted(onEvicted func(key string, value interface{})) AmeCacheOption {
+func AddOnEvictedOption(onEvicted func(key string, value interface{})) AmeCacheOption {
 	return func(ac *AmeCache) {
 		ac.onEvicted = onEvicted
 	}
 }
 
-func (c *AmeCache) ForceReplace() AmeCacheOption {
+func HasherOption(hasher Hasher) AmeCacheOption {
+	return func(ac *AmeCache) {
+		ac.hash = hasher
+	}
+}
+
+func (c *AmeCache) ForceReplaceOption() AmeCacheOption {
 	return func(ac *AmeCache) {
 		ac.force = true
 	}

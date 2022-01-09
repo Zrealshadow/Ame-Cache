@@ -73,6 +73,9 @@ func (bq *byteQueue) Push(entry []byte) (int, error) {
 
 // get the oldest entry
 func (bq *byteQueue) Peek() ([]byte, error) {
+	if bq.count == 0 {
+		return nil, ErrEmptyEntries
+	}
 	entry, err := bq.Get(uint32(bq.head))
 	if err != nil {
 		return nil, err

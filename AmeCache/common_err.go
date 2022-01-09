@@ -10,4 +10,5 @@ const (
 	ErrKeyNotExist       = Error("Key is not exist")
 	ErrOutOfIndex        = Error("Out of Index")
 	ErrOutOfMemory       = Error("Out of Memory")
+	ErrEmptyEntries      = Error("Empty Entries")
 )
