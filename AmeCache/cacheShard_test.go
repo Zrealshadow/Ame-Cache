@@ -74,10 +74,10 @@ func CheckCacheShardKV(groundTrue map[uint64]string, evictedmap map[string]strin
 		key := fmt.Sprintf("%d", kh)
 
 		//DeBUG
-		fmt.Printf("Check kh %d\n", kh)
-		if _, ok := evictedmap[key]; ok {
-			fmt.Printf("Khash exsit in evictedmap\n")
-		}
+		// fmt.Printf("Check kh %d\n", kh)
+		// if _, ok := evictedmap[key]; ok {
+		// 	fmt.Printf("Khash exsit in evictedmap\n")
+		// }
 		value, err := cs.get(kh, key)
 		if err == nil {
 			// Success Get
