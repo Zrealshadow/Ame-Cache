@@ -315,7 +315,7 @@ func CheckByteQueueOrder(order []int, bq *byteQueue, t *testing.T) {
 			if key_got != key {
 				t.Fatalf("[idx %d] Want Key %s, Got Key %s", idx, key, key_got)
 			}
-			bq.Pop()
+			_ = bq.Pop()
 			continue
 		}
 
@@ -323,6 +323,6 @@ func CheckByteQueueOrder(order []int, bq *byteQueue, t *testing.T) {
 		if k != -1 {
 			t.Fatalf("[idx %d] Missing Empty Entry", idx)
 		}
-		bq.Pop()
+		_ = bq.Pop()
 	}
 }

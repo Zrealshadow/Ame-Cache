@@ -100,7 +100,7 @@ func BenchmarkConcurrentMapSet(b *testing.B) {
 func BenchmarkBigCacheSet(b *testing.B) {
 	cache := initBigCache(b.N)
 	for i := 0; i < b.N; i++ {
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 }
 
@@ -108,7 +108,7 @@ func BenchmarkAmeCacheSet(b *testing.B) {
 	cache := initAmeCache(b.N)
 	for i := 0; i < b.N; i++ {
 		// fmt.Printf("QAQ\n")
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 }
 
@@ -176,12 +176,12 @@ func BenchmarkBigCacheGet(b *testing.B) {
 	b.StopTimer()
 	cache := initBigCache(b.N)
 	for i := 0; i < b.N; i++ {
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		cache.Get(key(i))
+		_, _ = cache.Get(key(i))
 	}
 }
 
@@ -189,12 +189,12 @@ func BenchmarkAmeCacheGet(b *testing.B) {
 	b.StopTimer()
 	cache := initAmeCache(b.N)
 	for i := 0; i < b.N; i++ {
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		cache.Get(key(i))
+		_, _ = cache.Get(key(i))
 	}
 }
 
@@ -328,14 +328,14 @@ func BenchmarkBigCacheGetParallel(b *testing.B) {
 	b.StopTimer()
 	cache := initBigCache(b.N)
 	for i := 0; i < b.N; i++ {
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		counter := 0
 		for pb.Next() {
-			cache.Get(key(counter))
+			_, _ = cache.Get(key(counter))
 			counter = counter + 1
 		}
 	})

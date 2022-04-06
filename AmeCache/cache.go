@@ -41,7 +41,7 @@ func NewAmeCache(options ...AmeCacheOption) *AmeCache {
 	}
 
 	if c.hash == nil {
-		c.hash = fnv64a{}
+		c.hash = newDefaultHasher()
 	}
 	return c
 }

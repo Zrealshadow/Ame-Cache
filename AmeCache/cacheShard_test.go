@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-var posMap = make(map[string]uint32)
-
 func TestCacheShardBasicOrder(t *testing.T) {
 	evictedMap := make(map[string]string)
 	inputMap := make(map[uint64]string)
