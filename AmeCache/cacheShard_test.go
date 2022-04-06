@@ -69,7 +69,7 @@ func FillUpCache(inputMap map[uint64]string, cs *cacheShard, t *testing.T, N int
 }
 
 func CheckCacheShardKV(groundTrue map[uint64]string, evictedmap map[string]string, cs *cacheShard, t *testing.T) {
-	fmt.Printf("Evicted Map %+v\n", evictedmap)
+	// fmt.Printf("Evicted Map %+v\n", evictedmap)
 	for kh, v := range groundTrue {
 		key := fmt.Sprintf("%d", kh)
 
