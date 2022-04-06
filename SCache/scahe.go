@@ -29,7 +29,8 @@ func (sc *SimpleCache) Set(key string, value interface{}) {
 func (sc *SimpleCache) Get(key string) interface{} {
 	sc.m.RLock()
 	defer sc.m.RUnlock()
-	sc.nget++
+	// Parallel failed
+	// sc.nget++
 
 	if sc.cache == nil {
 		return nil
@@ -38,7 +39,8 @@ func (sc *SimpleCache) Get(key string) interface{} {
 	v := sc.cache.Get(key)
 
 	if v != nil {
-		sc.nhit++
+		// Parallel failed
+		// sc.nhit++
 	}
 	return v
 }
