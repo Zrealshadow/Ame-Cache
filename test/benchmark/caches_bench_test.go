@@ -248,7 +248,7 @@ func BenchmarkBigCacheSetParallel(b *testing.B) {
 		id := rand.Intn(1000)
 		counter := 0
 		for pb.Next() {
-			cache.Set(parallelKey(id, counter), value())
+			_ = cache.Set(parallelKey(id, counter), value())
 			counter = counter + 1
 		}
 	})
@@ -262,7 +262,7 @@ func BenchmarkAmeCacheSetParallel(b *testing.B) {
 		id := rand.Intn(1000)
 		counter := 0
 		for pb.Next() {
-			cache.Set(parallelKey(id, counter), value())
+			_ = cache.Set(parallelKey(id, counter), value())
 			counter = counter + 1
 		}
 	})
@@ -345,14 +345,14 @@ func BenchmarkAmeCacheGetParallel(b *testing.B) {
 	b.StopTimer()
 	cache := initAmeCache(b.N)
 	for i := 0; i < b.N; i++ {
-		cache.Set(key(i), value())
+		_ = cache.Set(key(i), value())
 	}
 
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		counter := 0
 		for pb.Next() {
-			cache.Get(key(counter))
+			_, _ = cache.Get(key(counter))
 			counter = counter + 1
 		}
 	})
@@ -449,7 +449,7 @@ func BenchmarkBigCacheSetGetParallel(b *testing.B) {
 		counter := 0
 		tid := tids[rand.Intn(len(tids))]
 		for pb.Next() {
-			cache.Get(parallelKey(tid, counter))
+			_, _ = cache.Get(parallelKey(tid, counter))
 			counter = counter + 1
 		}
 	})

@@ -56,7 +56,6 @@ func (c *cacheShard) set(key string, value interface{}) {
 	}
 	c.usedEntrySize += en.Len()
 	c.cache[key] = e
-	return
 }
 
 func (c *cacheShard) del(key string) {
