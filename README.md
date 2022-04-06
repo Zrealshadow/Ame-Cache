@@ -1,6 +1,6 @@
 # AmeCache - Simple High-Performance Local Cache
 
-[![Test](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/test.yml/badge.svg)](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/test.yml)[![build](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/main.yml/badge.svg)](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/main.yml)![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Zrealshadow/Ame-Cache)![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Zrealshadow/Ame-Cache)![GitHub last commit](https://img.shields.io/github/last-commit/Zrealshadow/Ame-Cache)
+[![Test](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/test.yml/badge.svg)](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/test.yml) [![build](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/main.yml/badge.svg)](https://github.com/Zrealshadow/Ame-Cache/actions/workflows/main.yml) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Zrealshadow/Ame-Cache) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Zrealshadow/Ame-Cache) ![GitHub last commit](https://img.shields.io/github/last-commit/Zrealshadow/Ame-Cache)
 
 
 
